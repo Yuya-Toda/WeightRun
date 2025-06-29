@@ -37,6 +37,50 @@ def load_goal_weight():
 
 goal_weight_default = load_goal_weight()
 
+# --- 日別インプット ---
+st.subheader("📝 日別データ入力")
+
+with st.form("daily_input_form", clear_on_submit=False):
+    input_date = st.date_input("日付", date.today())
+    weight = st.number_input("体重 (kg)", min_value=0.0, step=0.1)
+    distance = st.number_input("ランニング距離 (km)", min_value=0.0, step=0.1)
+    submitted = st.form_submit_button("記録を保存")
+
+    if submitted:
+        calorie = round(distance * 60, 2)  # 消費カロリー計算（仮）
+        new_row = pd.DataFrame({
+            "日付": [input_date],
+            "体重": [weight],
+            "距離": [distance],
+            "カロリー": [calorie]
+        })
+        df = pd.concat([df, new_row], ignore_index=True)
+        df.to_csv(CSV_FILE, index=False)
+        st.success("記録を保存しました！")
+
+# --- 日別推移グラフ（体重とカロリー） ---
+st.subheader("📈 日別推移グラフ")
+df_plot = df.sort_values("日付")
+
+weight_line = alt.Chart(df_plot).mark_line(color='#1f77b4').encode(
+    x=alt.X('日付:T', title='日付'),
+    y=alt.Y('体重:Q', title='体重 (kg)', scale=alt.Scale(domain=[60, 80]), axis=alt.Axis(format='.1f'))
+)
+
+weight_points = alt.Chart(df_plot).mark_point(color='#1f77b4', filled=True).encode(
+    x='日付:T',
+    y='体重:Q'
+)
+
+calorie_bar = alt.Chart(df_plot).mark_bar(color='#ff7f0e', size=10).encode(
+    x=alt.X('日付:T', title='日付'),
+    y=alt.Y('カロリー:Q', title='消費カロリー', scale=alt.Scale(zero=True))
+)
+
+st.altair_chart((weight_line + weight_points).properties(height=300), use_container_width=True)
+st.altair_chart(calorie_bar.properties(height=300), use_container_width=True)
+
+
 # 月別目標読み込み（2025年6月〜12月）
 def load_monthly_goals():
     months = pd.date_range("2025-06-01", "2025-12-01", freq='MS').strftime("%Y-%m")
@@ -93,28 +137,6 @@ for i, row in goals_df.iterrows():
 if st.button("💾 月別目標を保存"):
     goals_df.to_csv(GOAL_MONTHLY_FILE, index=False)
     st.success("目標を保存しました")
-
-# --- 日別推移グラフ（体重とカロリー） ---
-st.subheader("📈 日別推移グラフ")
-df_plot = df.sort_values("日付")
-
-weight_line = alt.Chart(df_plot).mark_line(color='#1f77b4').encode(
-    x=alt.X('日付:T', title='日付'),
-    y=alt.Y('体重:Q', title='体重 (kg)', scale=alt.Scale(domain=[60, 80]), axis=alt.Axis(format='.1f'))
-)
-
-weight_points = alt.Chart(df_plot).mark_point(color='#1f77b4', filled=True).encode(
-    x='日付:T',
-    y='体重:Q'
-)
-
-calorie_bar = alt.Chart(df_plot).mark_bar(color='#ff7f0e', size=10).encode(
-    x=alt.X('日付:T', title='日付'),
-    y=alt.Y('カロリー:Q', title='消費カロリー', scale=alt.Scale(zero=True))
-)
-
-st.altair_chart((weight_line + weight_points).properties(height=300), use_container_width=True)
-st.altair_chart(calorie_bar.properties(height=300), use_container_width=True)
 
 # --- 月別体重・カロリー推移 ---
 st.subheader("📈 月別体重・カロリー推移")
