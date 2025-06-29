@@ -22,7 +22,12 @@ def load_data():
     except:
         return pd.DataFrame(columns=["日付", "体重", "距離", "カロリー"])
 
+# データ読み込み
 df = load_data()
+
+# 🔧 日付の再パースとフィルタ
+df["日付"] = pd.to_datetime(df["日付"], errors="coerce")
+df = df.dropna(subset=["日付"])  # 無効な日付がある行は削除
 
 # ゴール体重読み込み
 @st.cache_data
@@ -49,10 +54,10 @@ with st.form("daily_input_form", clear_on_submit=False):
     if submitted:
         calorie = round(distance * 60, 2)  # 消費カロリー計算（仮）
         new_row = pd.DataFrame({
-            "日付": [input_date],
-            "体重": [weight],
-            "距離": [distance],
-            "カロリー": [calorie]
+        "日付": [pd.to_datetime(input_date)],  # 念のため明示変換
+        "体重": [weight],
+        "距離": [distance],
+        "カロリー": [calorie]
         })
         df = pd.concat([df, new_row], ignore_index=True)
         df.to_csv(CSV_FILE, index=False)
