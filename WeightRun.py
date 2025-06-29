@@ -164,13 +164,15 @@ weight_line = alt.Chart(df_weight_long).mark_line().encode(
 
     x=alt.X('年月:N', title='年月'),
     y=alt.Y('体重:Q', title='体重 (kg)', axis=alt.Axis(titleColor='#1f77b4')),
-    color=alt.Color('種別:N', scale=alt.Scale(domain=['体重_実績', '体重_目標'], range=['#1f77b4', '#00BFFF']))
+    color=alt.Color('種別:N', scale=alt.Scale(domain=['体重_実績', '体重_目標'], range=['#1f77b4', '#00BFFF']),
+                    legend=alt.Legend(title="体重種別", orient="bottom"))
 )
 
 weight_point = alt.Chart(df_weight_long).mark_point().encode(
     x='年月:N',
     y='体重:Q',
-    color=alt.Color('種別:N', scale=alt.Scale(domain=['体重_実績', '体重_目標'], range=['#1f77b4', '#00BFFF']))
+    color=alt.Color('種別:N', scale=alt.Scale(domain=['体重_実績', '体重_目標'], range=['#1f77b4', '#00BFFF']),
+                    legend=alt.Legend(title="体重種別", orient="bottom"))
 )
 
 
@@ -188,7 +190,7 @@ color_scale = alt.Scale(
 calorie_bar = alt.Chart(df_cal_long).mark_bar().encode(
     x=alt.X('年月:N', title='年月'),
     y=alt.Y('値:Q', title='消費カロリー', axis=alt.Axis(titleColor='orange')),
-    color=alt.Color('種別:N', scale=color_scale, legend=alt.Legend(title="カロリー種別"))
+    color=alt.Color('種別:N', scale=color_scale, legend=alt.Legend(title="カロリー種別", orient="bottom"))
 ).properties(height=400)
 
 combined = alt.layer(
